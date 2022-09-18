@@ -7,7 +7,9 @@
 #include <optional>
 
 namespace indexed_set {
-  template <typename Key>
+  template <
+    typename Key,
+    class Hash = std::hash<Key>>
   class indexed_set {
   public:
     using key_type = Key;
@@ -16,6 +18,7 @@ namespace indexed_set {
     using const_reference = const value_type&;
     using iterator = typename std::vector<value_type>::iterator;
     using const_iterator = typename std::vector<value_type>::const_iterator;
+    using hasher = Hash;
 
     indexed_set() = default;
 
@@ -34,15 +37,15 @@ namespace indexed_set {
 
   private:
     std::vector<key_type> _values;
-    std::unordered_map<key_type, size_t> _indices;
+    std::unordered_map<key_type, size_t, hasher> _indices;
   };
 
-  template <class Key, std::uniform_random_bit_generator Gen>
+  template <typename Key, typename Hash, std::uniform_random_bit_generator Gen>
   std::optional<Key>
-  try_random_sample(const indexed_set<Key>& iset, Gen& gen);
+  try_random_sample(const indexed_set<Key, Hash>& iset, Gen& gen);
 
-  template <class Key, std::uniform_random_bit_generator Gen>
-  Key random_sample(const indexed_set<Key>& iset, Gen& gen);
+  template <typename Key, typename Hash, std::uniform_random_bit_generator Gen>
+  Key random_sample(const indexed_set<Key, Hash>& iset, Gen& gen);
 }  // namespace indexed_set
 
 #include "../../src/indexed_set.tpp"
