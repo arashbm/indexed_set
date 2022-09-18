@@ -6,7 +6,7 @@
 #include <indexed_set/indexed_set.hpp>
 
 int main() {
-  index_set::index_set<std::size_t> iset;
+  indexed_set::indexed_set<std::size_t> iset;
   iset.insert(1);
   iset.insert(2);
   iset.insert(3);
