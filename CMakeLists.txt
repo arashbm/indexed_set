@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(indexed_set LANGUAGES CXX VERSION 0.1)
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+get_directory_property(is_subproject PARENT_DIRECTORY)
+if(NOT is_subproject)
+  set(is_standalone YES)
+else()
+  set(is_standalone NO)
+endif()
 
 include(GNUInstallDirs)
 
@@ -14,22 +20,30 @@ target_include_directories(
   $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}>/include/
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-Include(FetchContent)
-FetchContent_Declare(
-  Catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG v2.13.9)
+if (is_standalone)
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-FetchContent_MakeAvailable(Catch2)
+  Include(FetchContent)
+  FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v3.7.1)
 
-add_executable(
-  ${PROJECT_NAME}_tests
-  EXCLUDE_FROM_ALL
-  src/tests.cpp src/indexed_set_tests.cpp)
-target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME}_tests PRIVATE Catch2::Catch2)
-target_compile_options(${PROJECT_NAME}_tests PRIVATE
-  -Werror -Wall -Wextra -Wconversion -Wsign-conversion)
+  FetchContent_MakeAvailable(Catch2)
+
+  add_executable(
+    ${PROJECT_NAME}_tests
+    EXCLUDE_FROM_ALL
+    src/tests.cpp)
+  target_link_libraries(${PROJECT_NAME}_tests PRIVATE
+    ${PROJECT_NAME} Catch2::Catch2WithMain)
+  target_compile_options(${PROJECT_NAME}_tests PRIVATE
+    -Werror -Wall -Wextra -Wconversion -Wsign-conversion)
+
+  include(CTest)
+  include(Catch)
+  catch_discover_tests(${PROJECT_NAME}_tests)
+endif()
 
 install(
   TARGETS ${PROJECT_NAME}
